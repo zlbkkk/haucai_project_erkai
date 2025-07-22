@@ -1,0 +1,106 @@
+version: '3.8'
+
+# 用来快速启动测试平台的前后端,mq和db
+# 默认会拉取dockerhub最新的镜像，不会用到本地的代码构建
+# 仅适用想快速体验测试平台和一直使用最新版的用户，不适合二开
+
+x-env-db: &env_db
+  MYSQL_DATABASE: ${MYSQL_DATABASE}
+  MYSQL_USER: ${MYSQL_USER}
+  MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+  MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+  MYSQL_HOST: ${MYSQL_HOST:-db}
+  MYSQL_PORT: ${MYSQL_PORT:-3306}
+
+x-env-mq: &env_mq
+  RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+  RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+  MQ_PORT: ${MQ_PORT}
+  MQ_HOST: ${MQ_HOST:-mq}
+  MQ_ADMIN_PORT: ${MQ_ADMIN_PORT}
+  MQ_VHOST: ${MQ_VHOST:-/}
+
+x-env-celery: &env_celery
+  SERVER_IP: ${SERVER_IP}
+  DJANGO_API_PORT: ${DJANGO_API_PORT}
+
+x-env-app: &env_app
+  EMAIL_HOST: ${EMAIL_HOST}
+  EMAIL_PORT: ${EMAIL_PORT}
+  EMAIL_HOST_USER: ${EMAIL_HOST_USER}
+  EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD}
+  LOKI_USERNAME: ${LOKI_USERNAME}
+  LOKI_PASSWORD: ${LOKI_PASSWORD}
+  LOKI_URL: ${LOKI_URL}
+
+services:
+  app:
+    image: rikasai/fast-runner-backend:latest
+    environment:
+      <<: [*env_db, *env_celery, *env_app, *env_mq]
+    entrypoint: /app/start.sh
+    command: "app"
+    restart: always
+    depends_on:
+      - db
+      - mq
+
+  celery-worker:
+    image: rikasai/fast-runner-backend:latest
+    environment:
+      <<: [*env_db, *env_celery, *env_app, *env_mq]
+    entrypoint: /app/start.sh
+    command: "celery-worker"
+    restart: always
+    depends_on:
+      - db
+      - mq
+
+  celery-beat:
+    image: rikasai/fast-runner-backend:latest
+    environment:
+      <<: [*env_db, *env_celery, *env_app, *env_mq]
+    entrypoint: /app/start.sh
+    command: "celery-beat"
+    restart: always
+    depends_on:
+      - db
+      - mq
+
+  nginx:
+    build: ./nginx-remote
+    ports:
+      - "${DJANGO_ADMIN_PORT}:8000"
+    depends_on:
+      - app
+    restart: always
+    environment:
+      <<: *env_app
+
+  web:
+    image: rikasai/fast-runner-frontend:latest
+    ports:
+      - "${WEB_PORT}:80"
+    depends_on:
+      - app
+
+  db:
+    image: mariadb:10.6.1
+    environment:
+      <<: *env_db
+    volumes:
+      - ./db/my.cnf:/etc/mysql/mysql.conf.d/mysqld.cnf
+      - ./db:/docker-entrypoint-initdb.d/:ro
+    ports:
+      - "${MYSQL_PORT_OUT}:3306"
+    restart: always
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+
+  mq:
+    image: rabbitmq:management-alpine
+    environment:
+      <<: *env_mq
+    ports:
+      - "${MQ_ADMIN_PORT}:15672"
+      - "${MQ_PORT}:5672"
+    restart: always

@@ -1,0 +1,28 @@
+name: Execute remote shell script
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows:
+      - "Build Frontend and Push Docker Image"
+      - "Build Backend and Push Docker Image"
+    types:
+      - completed
+
+jobs:
+  execute_remote_script:
+    runs-on: ubuntu-latest
+    env:
+      WORKFLOW_COUNT: 0
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: (nd) executing remote ssh commands using ssh key
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.REMOTE_SERVER_HOST }}
+        username: ${{ secrets.REMOTE_SERVER_USER }}
+        key: ${{ secrets.REMOTE_SERVER_PRIVATE_KEY }}
+        port: ${{ secrets.REMOTE_SERVER_PORT }}
+        script: sh ${{ secrets.REMOTE_SCRIPT_PATH }}
