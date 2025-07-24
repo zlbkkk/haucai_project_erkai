@@ -25,7 +25,7 @@ ul li {
 .nav-api-side {
     overflow: auto;
     border: 1px solid #ddd;
-    width: 240px;
+    width: 230px;
     margin-left: 0;
     border-radius: 4px;
     position: fixed;

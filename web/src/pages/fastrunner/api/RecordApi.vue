@@ -199,7 +199,7 @@
         </el-header>
 
         <el-container>
-            <el-aside style="width:260px;margin-top: 10px;">
+            <el-aside style="width:240px;margin-top: 10px;">
                 <div class="nav-api-side">
                     <div class="api-tree">
                         <el-input
@@ -227,7 +227,7 @@
                                 slot-scope="{ node, data }"
                                 @mouseenter="mouseenter(node)"
                                 @mouseleave="mouseleave"
-                                style="display: flex; width: 180px"
+                                style="display: flex; width: 220px"
                             >
                                 <span style="overflow: hidden; text-overflow:ellipsis; flex: 1">
                                     <i class="iconfont" v-html="expand"></i>&nbsp;&nbsp;{{ node.label }}
@@ -243,7 +243,7 @@
                 </div>
             </el-aside>
 
-            <el-main style="padding: 0;">
+            <el-main style="padding: 0; margin-left: -50px;">
                 <api-body
                     v-show="addAPIFlag"
                     :isSaveAs="isSaveAs"
@@ -658,7 +658,7 @@ export default {
 
 <style scoped>
 .icon-group {
-    margin-right: 6px;
+    margin-right: 15px;
 }
 
 .icon-group i {

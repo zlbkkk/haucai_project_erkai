@@ -62,7 +62,7 @@
 
         <el-container>
             <el-main style="padding: 0; margin-left: 0;">
-                <div style="position: fixed; bottom: 0; right:0; left: 500px; top: 160px">
+                <div style="position: fixed; bottom: 0; right:0; left: 470px; top: 160px">
                     <el-dialog
                         v-if="dialogTableVisible"
                         :visible.sync="dialogTableVisible"

@@ -1,6 +1,6 @@
 <template>
     <el-container>
-        <el-header style="padding: 0; height: 50px;">
+        <el-header style="padding: 0; height: 50px; margin-left: 50px;">
             <div class="recordapi__header">
                 <div class="recordapi__header--item" :style="{paddingLeft: '2px'}">
                     <el-checkbox
@@ -37,6 +37,10 @@
                             <el-dropdown-item command="">所有</el-dropdown-item>
                         </el-dropdown-menu>
                     </el-dropdown>
+                    <span v-if="visibleTag !== '' && visibleTag !== undefined"
+                          style="margin-left: 8px; color: #409EFF; font-size: 12px; background-color: #ecf5ff; padding: 2px 8px; border-radius: 12px; border: 1px solid #b3d8ff;">
+                        {{ getStatusText(visibleTag) }}
+                    </span>
                 </div>
                 <!--                            api环境字段暂时不使用-->
 
@@ -54,24 +58,12 @@
                 <!--                    </el-dropdown>-->
                 <!--                </div>-->
 
-                <div class="recordapi__header--item">
-                    <el-pagination
-                        style="margin-top: 5px"
-                        :page-size="11"
-                        v-show="apiData.count !== 0 "
-                        background
-                        @current-change="handleCurrentChange"
-                        :current-page.sync="currentPage"
-                        layout="total, prev, pager, next, jumper"
-                        :total="apiData.count"
-                    >
-                    </el-pagination>
-                </div>
+
             </div>
         </el-header>
 
         <el-container>
-            <el-main style="padding: 0; margin-left: 10px;">
+            <el-main style="padding: 0; margin-left: 10px; overflow: visible;">
                 <el-dialog
                     v-if="dialogTableVisible"
                     :visible.sync="dialogTableVisible"
@@ -189,10 +181,10 @@
                 </el-dialog>
 
 
-                <div style="position: fixed; bottom: 0; right:0; left: 460px; top: 160px">
+                <div class="api-table-container">
                     <el-table
                         highlight-current-row
-                        height="calc(100%)"
+                        height="calc(100vh - 260px)"
                         ref="multipleTable"
                         :data="apiData.results"
                         :show-header="false"
@@ -276,9 +268,9 @@
                                 </el-tag>
                             </template>
                         </el-table-column>
-                        <el-table-column>
+                        <el-table-column width="180">
                             <template slot-scope="scope">
-                                <el-row v-show="currentRow === scope.row">
+                                <el-row v-show="currentRow === scope.row" style="display: flex; align-items: center;">
                                     <el-button
                                         type="info"
                                         icon="el-icon-edit"
@@ -335,6 +327,19 @@
                             </template>
                         </el-table-column>
                     </el-table>
+
+                    <!-- 分页组件移到表格容器内的右下角 -->
+                    <div style="text-align: right; margin-top: 15px; margin-right: 15px; margin-bottom: 20px; background-color: #f5f5f5; padding: 8px 12px; border-radius: 4px;">
+                        <el-pagination
+                            :page-size="11"
+                            background
+                            @current-change="handleCurrentChange"
+                            :current-page.sync="currentPage"
+                            layout="total, prev, pager, next, jumper"
+                            :total="apiData.count"
+                        >
+                        </el-pagination>
+                    </div>
                 </div>
 
             </el-main>
@@ -476,6 +481,23 @@ export default {
     },
 
     methods: {
+        getStatusText(tag) {
+            switch (tag) {
+                case '1':
+                case 1:
+                    return '成功';
+                case '0':
+                case 0:
+                    return '未知';
+                case '2':
+                case 2:
+                    return '失败';
+                case '':
+                    return '所有';
+                default:
+                    return '';
+            }
+        },
         tagChangeHandle(command) {
             // this.tag = command;
             this.$emit('update:visibleTag', command);
@@ -779,6 +801,14 @@ export default {
 </script>
 
 <style scoped>
+.api-table-container {
+    position: relative;
+    width: calc(100% - 56px);
+    height: calc(100vh - 160px);
+    margin-left: 46px;
+    overflow: auto;
+}
+
 .recordapi__header {
     display: flex;
     align-items: center;
