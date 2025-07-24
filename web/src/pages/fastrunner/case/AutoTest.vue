@@ -190,7 +190,7 @@
                             <span class="custom-tree-node"
                                   slot-scope="{ node, data }"
                                   @mouseenter="mouseenter(node)" @mouseleave="mouseleave"
-                                  style="display: flex; width: 180px"
+                                  style="display: flex; width: 150px"
                             >
                                 <span style="overflow: hidden; text-overflow:ellipsis; flex: 1">
                                     <i class="iconfont" v-html="expand"></i>&nbsp;&nbsp;{{ node.label }}
@@ -209,7 +209,7 @@
 
             </el-aside>
 
-            <el-main style="padding: 0; margin-left: -50px;">
+            <el-main style="padding: 0; margin-left: -80px;">
                 <test-list
                     v-show="addTestActivate"
                     :project="$route.params.id"

@@ -1,68 +1,49 @@
 <template>
     <el-container>
-        <el-header style="padding-top: 10px; height: 50px;">
-            <div style="overflow: hidden">
-                <el-row :gutter="50">
-                    <el-col :span="8" v-if="testData.count >= 0">
-                        <el-input placeholder="请输入用例名称" clearable v-model="search" @keyup.enter.native="getTestList"
-                                  class="input-with-select"
-                                  style="width: 500px">
-                            <el-button slot="append" icon="el-icon-search" @click="getTestList"></el-button>
+        <el-header style="padding: 0; height: 50px; margin-left: 5px;">
+            <div class="recordapi__header">
+                <div class="recordapi__header--item">
+                    <el-input placeholder="请输入用例名称" clearable v-model="search" @keyup.enter.native="getTestList"
+                              class="input-with-select"
+                              style="width: 400px">
+                        <el-button slot="append" icon="el-icon-search" @click="getTestList"></el-button>
+                        <el-select v-model="searchType" slot="prepend" placeholder="用例"
+                                   @change="searchTypeChangeHandle">
+                            <el-option label="用例" value="1"></el-option>
+                            <el-option label="API" value="2"></el-option>
+                        </el-select>
+                    </el-input>
+                </div>
 
-
-                            <el-select v-model="searchType" slot="prepend" placeholder="用例"
-                                       @change="searchTypeChangeHandle">
-                                <el-option label="用例" value="1"></el-option>
-                                <el-option label="API" value="2"></el-option>
-
-                            </el-select>
-
-                        </el-input>
-                    </el-col>
-
-                    <el-col :span="2" style="margin-left: 80px">
-                        <el-dropdown @command="caseTypeChangeHandle">
-                            <el-button type="primary">
-                                类型
-                                <i class="el-icon-arrow-down el-icon--right"></i>
-                            </el-button>
-                            <el-dropdown-menu slot="dropdown">
-                                <el-dropdown-item command="1">冒烟用例</el-dropdown-item>
-                                <el-dropdown-item command="2">集成用例</el-dropdown-item>
-                                <el-dropdown-item command="3">监控脚本</el-dropdown-item>
-                                <el-dropdown-item command="4">核心用例</el-dropdown-item>
-                                <el-dropdown-item command="">所有</el-dropdown-item>
-                            </el-dropdown-menu>
-                        </el-dropdown>
-                    </el-col>
-
-                    <el-col :span="2">
-                        <el-button
-                            type="primary"
-                            @click="resetSearch"
-                        >重置
+                <div class="recordapi__header--item">
+                    <el-dropdown @command="caseTypeChangeHandle">
+                        <el-button type="primary">
+                            类型
+                            <i class="el-icon-arrow-down el-icon--right"></i>
                         </el-button>
-                    </el-col>
+                        <el-dropdown-menu slot="dropdown">
+                            <el-dropdown-item command="1">冒烟用例</el-dropdown-item>
+                            <el-dropdown-item command="2">集成用例</el-dropdown-item>
+                            <el-dropdown-item command="3">监控脚本</el-dropdown-item>
+                            <el-dropdown-item command="4">核心用例</el-dropdown-item>
+                            <el-dropdown-item command="">所有</el-dropdown-item>
+                        </el-dropdown-menu>
+                    </el-dropdown>
+                </div>
 
-                    <el-col :span="7">
-                        <el-pagination
-                            @current-change="handleCurrentChange"
-                            :current-page.sync="currentPage"
-                            :page-size="11"
-                            v-show="testData.count !== 0 "
-                            background
-                            layout="total, prev, pager, next, jumper"
-                            :total="testData.count"
-                        >
-                        </el-pagination>
-                    </el-col>
-                </el-row>
+                <div class="recordapi__header--item">
+                    <el-button
+                        type="primary"
+                        @click="resetSearch"
+                    >重置
+                    </el-button>
+                </div>
             </div>
         </el-header>
 
         <el-container>
-            <el-main style="padding: 0; margin-left: 0;">
-                <div style="position: fixed; bottom: 0; right:0; left: 470px; top: 160px">
+            <el-main style="padding: 0; margin-left: 10px; overflow: visible;">
+                <div class="test-table-container">
                     <el-dialog
                         v-if="dialogTableVisible"
                         :visible.sync="dialogTableVisible"
@@ -208,19 +189,19 @@
                         :data="testData.results"
                         :show-header="testData.count !== 0 "
                         stripe
-                        height="calc(100%)"
+                        height="calc(100vh - 260px)"
                         @cell-mouse-enter="cellMouseEnter"
                         @cell-mouse-leave="cellMouseLeave"
                         @selection-change="handleSelectionChange"
                     >
                         <el-table-column
                             type="selection"
-                            width="45"
+                            width="40"
                         >
                         </el-table-column>
 
                         <el-table-column
-                            width="25"
+                            width="30"
                         >
                             <template slot-scope="scope">
                                 <el-dropdown @command="dropdownMenuChangeHandle">
@@ -249,10 +230,11 @@
 
                         <el-table-column
                             label="用例名称"
-                            width="400"
+                            width="180"
                         >
                             <template slot-scope="scope">
-                                <div>{{ scope.row.name }}
+                                <div class="case-name-cell" :title="scope.row.name">
+                                    <span class="case-name-text">{{ scope.row.name }}</span>
                                     <i class="el-icon-success " style="color: green" v-if="scope.row.tasks.length > 0 "
                                        :title="'已加入定时任务: ' + scope.row.tasks.map(task => task.name).join('，')">
                                     </i>
@@ -271,20 +253,20 @@
                         </el-table-column>
 
                         <el-table-column
-                            label="用例类型"
-                            width="100"
+                            label="类型"
+                            width="75"
                         >
                             <template slot-scope="scope">
-                                <el-tag v-if="scope.row.tag==='冒烟用例'">{{ scope.row.tag }}</el-tag>
-                                <el-tag v-if="scope.row.tag==='集成用例'" type="info">{{ scope.row.tag }}</el-tag>
-                                <el-tag v-if="scope.row.tag==='监控脚本'" type="danger">{{ scope.row.tag }}</el-tag>
-                                <el-tag v-if="scope.row.tag==='核心用例'" type="success">{{ scope.row.tag }}</el-tag>
+                                <el-tag v-if="scope.row.tag==='冒烟用例'" size="mini">冒烟</el-tag>
+                                <el-tag v-if="scope.row.tag==='集成用例'" type="info" size="mini">集成</el-tag>
+                                <el-tag v-if="scope.row.tag==='监控脚本'" type="danger" size="mini">监控</el-tag>
+                                <el-tag v-if="scope.row.tag==='核心用例'" type="success" size="mini">核心</el-tag>
                             </template>
                         </el-table-column>
 
                         <el-table-column
                             label="更新时间"
-                            width="105"
+                            width="95"
                         >
                             <template slot-scope="scope">
                                 <div>{{ scope.row.update_time|datetimeFormat('MM-DD hh:mm') }}</div>
@@ -293,7 +275,7 @@
 
                         <el-table-column
                             label="创建时间"
-                            width="105"
+                            width="95"
                         >
                             <template slot-scope="scope">
                                 <div>{{ scope.row.create_time|datetimeFormat('MM-DD hh:mm') }}</div>
@@ -303,7 +285,7 @@
 
                         <el-table-column
                             label="创建人"
-                            width="100"
+                            width="70"
 
                         >
                             <template slot-scope="scope">
@@ -314,7 +296,7 @@
 
                         <el-table-column
                             label="更新人"
-                            width="100"
+                            width="70"
 
                         >
                             <template slot-scope="scope">
@@ -325,10 +307,10 @@
 
                         <el-table-column
                             label="用例操作"
-                            width="200"
+                            width="160"
                         >
                             <template slot-scope="scope">
-                                <div v-show="currentRow === scope.row" style="display: flex; align-items: center; gap: 4px; white-space: nowrap;">
+                                <div v-show="currentRow === scope.row" style="display: flex; align-items: center; gap: 2px; white-space: nowrap;">
                                     <el-button
                                         type="info"
                                         icon="el-icon-edit"
@@ -394,6 +376,20 @@
                             </template>
                         </el-table-column>
                     </el-table>
+
+                    <!-- 分页组件移到表格容器内的右下角 -->
+                    <div style="text-align: right; margin-top: 15px; margin-right: 15px; margin-bottom: 20px; background-color: #f5f5f5; padding: 8px 12px; border-radius: 4px;">
+                        <el-pagination
+                            @current-change="handleCurrentChange"
+                            :current-page.sync="currentPage"
+                            :page-size="11"
+                            v-show="testData.count !== 0 "
+                            background
+                            layout="total, prev, pager, next, jumper"
+                            :total="testData.count"
+                        >
+                        </el-pagination>
+                    </div>
                 </div>
             </el-main>
 
@@ -822,6 +818,39 @@ export default {
 </script>
 
 <style scoped>
+.test-table-container {
+    position: relative;
+    width: calc(100% + 15px);
+    height: calc(100vh - 160px);
+    margin-left: -15px;
+    overflow: hidden;
+}
+
+.case-name-cell {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.case-name-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+    margin-right: 5px;
+}
+
+.recordapi__header {
+    display: flex;
+    align-items: center;
+    height: 50px;
+    padding: 0 20px;
+}
+
+.recordapi__header--item {
+    margin-right: 20px;
+}
+
 .el-select {
     width: 80px;
 }

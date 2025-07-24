@@ -6,7 +6,7 @@ ul li {
     line-height: 60px;
     color: #555;
     font-size: 12px;
-    width: 240px;
+    width: 180px;
     margin-top: 1px;
 }
 
@@ -25,7 +25,7 @@ ul li {
 .nav-api-side {
     overflow: auto;
     border: 1px solid #ddd;
-    width: 230px;
+    width: 180px;
     margin-left: 0;
     border-radius: 4px;
     position: fixed;
@@ -47,7 +47,7 @@ ul li {
 .tree {
     overflow-y: auto;
     overflow-x: auto;
-    width: 280px;
+    width: 180px;
     height: 500px;
 }
 
