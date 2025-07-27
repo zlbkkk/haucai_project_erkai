@@ -42,7 +42,7 @@
         </el-header>
 
         <el-container>
-            <el-main style="padding: 0; margin-left: 10px; overflow: visible;">
+            <el-main style="padding: 0; margin-left: 10px;">
                 <div class="test-table-container">
                     <el-dialog
                         v-if="dialogTableVisible"
@@ -65,7 +65,7 @@
                             <div>
                                 <el-row :gutter="3">
                                     <el-col :span="8">
-                                        <span>&nbsp配置: </span>
+                                        <span>&amp;nbsp;配置: </span>
                                         <el-select
                                             placeholder="请选择"
                                             size="medium"
@@ -187,11 +187,12 @@
                         v-loading="loading"
                         ref="multipleTable"
                         :data="testData.results"
-                        :show-header="testData.count !== 0 "
+                        :show-header="testData.count !== 0"
                         stripe
                         height="calc(100vh - 260px)"
                         @cell-mouse-enter="cellMouseEnter"
                         @cell-mouse-leave="cellMouseLeave"
+                        style="width: 100%; overflow: hidden; table-layout: fixed;"
                         @selection-change="handleSelectionChange"
                     >
                         <el-table-column
@@ -820,10 +821,10 @@ export default {
 <style scoped>
 .test-table-container {
     position: relative;
-    width: calc(100% + 15px);
+    width: calc(100% - 20px);
     height: calc(100vh - 160px);
-    margin-left: -15px;
-    overflow: hidden;
+    margin-left: 0;
+    overflow: visible;
 }
 
 .case-name-cell {
@@ -855,4 +856,36 @@ export default {
     width: 80px;
 }
 
+/* 确保表格不会撑开左侧菜单 */
+.el-table {
+    table-layout: fixed !important;
+    width: 100% !important;
+}
+
+.el-table__body-wrapper {
+    overflow: visible !important;
+}
+
+/* 确保操作按钮不会撑开表格 */
+.el-button {
+    padding: 7px !important;
+}
+
+/* 确保左侧菜单宽度固定 */
+.el-container {
+    overflow: visible;
+    width: 100%;
+}
+
+.el-main {
+    overflow: visible;
+    min-width: 0;
+}
+
+/* 确保表格单元格内容不溢出 */
+.el-table .cell {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
 </style>

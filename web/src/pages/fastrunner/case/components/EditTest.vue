@@ -23,7 +23,7 @@
                         ref="tree2"
                     >
                         <span class="custom-tree-node" slot-scope="{ node, data }">
-                            <span>
+                            <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 140px; display: inline-block;">
                                 <i class="iconfont" v-html="expand"></i>
                                 &nbsp;&nbsp;{{ node.label }}
                             </span>
@@ -33,7 +33,7 @@
             </div>
         </el-aside>
 
-        <el-main>
+        <el-main style="padding: 0 0 0 10px; min-width: 0;">
             <div v-show="!editTestStepActivate" class="recordapi__header">
                 <div class="recordapi__header" :style="{ flex: 1 }">
                     <div class="recordapi__header--item">
@@ -829,19 +829,64 @@ export default {
     margin: 0 2px;
 }
 
-.edit__block {
-    height: auto;
-    padding: 0 5px;
-    line-height: 1;
+/* 防止右侧内容撑开左侧菜单 */
+.el-container {
+    overflow: visible;
+    width: 100%;
 }
 
-.edit__block--inner {
-    padding: 10px 0 10px 15px;
+.el-main {
+    overflow: visible;
+    min-width: 0;
 }
 
-.edit__block--inner .block-method {
-    padding: 0;
-    text-align: left;
-    margin-bottom: 4px;
+/* 确保树节点内容不溢出 */
+.custom-tree-node span {
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+
+/* 确保左侧菜单宽度固定 */
+.el-aside {
+    flex-shrink: 0 !important;
+    width: 180px !important;
+    min-width: 180px !important;
+    max-width: 180px !important;
+    overflow: visible;
+    position: relative;
+    border-right: 1px solid #e6e6e6;
+    box-sizing: border-box;
+}
+
+/* 确保API树不会被撑开 */
+.api-tree {
+    width: 100%;
+    overflow: visible;
+}
+
+/* 确保API列表内容不溢出 */
+.block {
+    overflow: hidden;
+}
+
+/* 确保两列布局不会挤压 */
+.el-row {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+}
+
+.el-col-12 {
+    width: 50%;
+    max-width: 50%;
+    flex: 0 0 50%;
+}
+
+.nav-api-side {
+    width: 180px !important;
+    overflow: visible !important;
+    position: relative !important;
+    left: auto !important;
+    margin-top:-118px !important;
 }
 </style>

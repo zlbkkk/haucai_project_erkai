@@ -161,7 +161,7 @@
 
         <el-container>
             <el-aside
-                style="margin-top: 10px;"
+                style="width: 180px; margin-top: 10px;"
                 v-show="addTestActivate"
             >
                 <div class="nav-api-side">
@@ -192,7 +192,7 @@
                                   @mouseenter="mouseenter(node)" @mouseleave="mouseleave"
                                   style="display: flex; width: 150px"
                             >
-                                <span style="overflow: hidden; text-overflow:ellipsis; flex: 1">
+                                <span style="overflow: hidden; text-overflow:ellipsis; flex: 1; white-space: nowrap;">
                                     <i class="iconfont" v-html="expand"></i>&nbsp;&nbsp;{{ node.label }}
                                 </span>
                                 <span class="icon-group" v-show="node.id === mouseNodeId" >
@@ -209,7 +209,7 @@
 
             </el-aside>
 
-            <el-main style="padding: 0; margin-left: -30px;">
+            <el-main style="padding: 0; margin-left: 10px;">
                 <test-list
                     v-show="addTestActivate"
                     :project="$route.params.id"
@@ -459,9 +459,46 @@ export default {
     padding: 2px;
 }
 
-/* 为测试用例页面的左侧树形结构添加特定的左边距，避免与导航栏重合 */
-.nav-api-side {
-    left: 220px !important;
+/* 确保左侧菜单宽度固定 */
+.el-aside {
+    flex-shrink: 0 !important;
+    width: 180px !important;
+    min-width: 180px !important;
+    max-width: 180px !important;
+    overflow: visible;
+    position: relative;
+    border-right: 1px solid #e6e6e6;
+    box-sizing: border-box;
 }
 
+/* 确保API树不会被撑开 */
+.api-tree {
+    width: 100%;
+    overflow: visible;
+}
+
+/* 确保树节点内容不溢出 */
+.custom-tree-node span {
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+
+/* 防止右侧内容撑开左侧菜单 */
+.el-container {
+    overflow: visible;
+    width: 100%;
+}
+
+.el-main {
+    overflow: visible;
+    min-width: 0;
+}
+
+/* 移除导致文件夹显示在右侧的样式 */
+.nav-api-side {
+    width: 180px;
+    margin-top:-3px;
+    margin-left: 1px;
+}
 </style>
