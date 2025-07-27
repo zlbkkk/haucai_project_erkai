@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div style="margin-left: 50px;">
         <div>
             <div>
                 <el-input

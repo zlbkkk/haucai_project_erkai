@@ -203,7 +203,7 @@
                 <div class="nav-api-side">
                     <div class="api-tree">
                         <el-input
-                            placeholder="输入关键字进行过滤"
+                            placeholder="文件夹查询"
                             v-model="filterText"
                             size="medium"
                             clearable

@@ -209,7 +209,7 @@
 
             </el-aside>
 
-            <el-main style="padding: 0; margin-left: -80px;">
+            <el-main style="padding: 0; margin-left: -30px;">
                 <test-list
                     v-show="addTestActivate"
                     :project="$route.params.id"
@@ -457,6 +457,11 @@ export default {
 .icon-group i {
     margin-left: 4px;
     padding: 2px;
+}
+
+/* 为测试用例页面的左侧树形结构添加特定的左边距，避免与导航栏重合 */
+.nav-api-side {
+    left: 220px !important;
 }
 
 </style>

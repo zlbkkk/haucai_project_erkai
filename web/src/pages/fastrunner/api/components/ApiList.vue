@@ -63,7 +63,7 @@
         </el-header>
 
         <el-container>
-            <el-main style="padding: 0; margin-left: 10px; overflow: visible;">
+            <el-main style="padding: 0; margin-left: 50px; overflow: visible;">
                 <el-dialog
                     v-if="dialogTableVisible"
                     :visible.sync="dialogTableVisible"
@@ -228,10 +228,11 @@
                                           :class="`block_method_${scope.row.method.toLowerCase()}`">
                                         {{ scope.row.method.toUpperCase() }}
                                     </span>
-                                    <span class="block-method block_method_color block_method_group"
-                                          :title="'API分组：' + scope.row.relation_name">
-                                        {{ scope.row.relation_name }}
-                                    </span>
+                                    <el-tooltip :content="'API分组：' + scope.row.relation_name" placement="top" effect="light">
+                                        <span class="block-method block_method_color block_method_group">
+                                            {{ scope.row.relation_name }}
+                                        </span>
+                                    </el-tooltip>
                                     <div class="block">
                                        <span class="block-method block_method_color block_method_options"
                                              v-if="scope.row.creator==='yapi'"
@@ -803,9 +804,9 @@ export default {
 <style scoped>
 .api-table-container {
     position: relative;
-    width: calc(100% - 56px);
+    width: calc(100% - 20px);
     height: calc(100vh - 160px);
-    margin-left: 46px;
+    margin-left: 10px;
     overflow: auto;
 }
 
@@ -839,6 +840,23 @@ export default {
 
 .block_method_group {
     background-color: #67c23a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 150px; /* 增加默认最大宽度 */
+    display: inline-block;
+}
+
+@media screen and (min-width: 1200px) {
+    .block_method_group {
+        max-width: 180px; /* 在大屏幕上显示更多内容 */
+    }
+}
+
+@media screen and (min-width: 1600px) {
+    .block_method_group {
+        max-width: 220px; /* 在超大屏幕上显示更多内容 */
+    }
 }
 
 .block_method_cases {
