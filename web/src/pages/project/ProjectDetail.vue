@@ -1,13 +1,10 @@
 <template>
 
     <div>
-        <ul class="title-project">
-            <li class="title-li" title="Test API Project">
-                <b>{{ projectInfo.name }}</b>
-                <b class="desc-li">{{ projectInfo.desc }}</b>
-
-            </li>
-        </ul>
+        <div style="padding: 10px 0; margin-bottom: 10px; display: flex; align-items: center;">
+            <h2 style="margin: 10 10 10 10; font-size: 20px; color: #606266; font-weight: 500;">{{ projectInfo.name }}</h2>
+            <p v-if="projectInfo.desc" style="margin: 0 0 0 15px; font-size: 14px; color: #909399;">项目描述：{{ projectInfo.desc }}</p>
+        </div>
 
         <ul class="project_detail" style="display: none">
             <li class="pull-left">
@@ -53,75 +50,73 @@
             </li>
         </ul>
 
-        <div style="display: flex; justify-content: space-around; ">
-            <el-card style="width: 30%">
+        <div style="display: flex; justify-content: space-around; margin-bottom: 20px;">
+            <el-card style="width: 30%; max-height: 300px;">
                 <div slot="header">
                     <span>API</span>
                     <i class="iconfont">&#xe74a;</i>
                 </div>
                 <el-row type="flex">
-                    <el-col :span="16">
-                        <ApexCharts :options="apiPieOptions" :series="apiPieSeries"></ApexCharts>
+                    <el-col :span="24">
+                        <ApexCharts height="130" :options="apiPieOptions" :series="apiPieSeries"></ApexCharts>
                     </el-col>
                 </el-row>
-                <el-row type="flex" justify="end">
-                    <el-col :span="12">
-                        <ApexCharts :options="apiCoverRateOptions" :series="apiCoverRateSeries"></ApexCharts>
+                <el-row type="flex" justify="center">
+                    <el-col :span="16">
+                        <ApexCharts height="100" :options="apiCoverRateOptions" :series="apiCoverRateSeries"></ApexCharts>
                     </el-col>
                 </el-row>
             </el-card>
 
-            <el-card style="width: 30%">
+            <el-card style="width: 30%; max-height: 300px;">
                 <div slot="header">
                     <span>Case</span>
                     <i class="iconfont">&#xe6da;</i>
                 </div>
                 <el-row type="flex">
-                    <el-col :span="16">
-                        <ApexCharts :options="casePieOptions" :series="casePieSeries"></ApexCharts>
+                    <el-col :span="24">
+                        <ApexCharts height="130" :options="casePieOptions" :series="casePieSeries"></ApexCharts>
                     </el-col>
                 </el-row>
 
-                <el-row type="flex" justify="end">
-                    <el-col :span="12">
-                        <ApexCharts :options="coreCaseCoverRateOptions" :series="coreCaseCoverRateSeries"></ApexCharts>
+                <el-row type="flex" justify="center">
+                    <el-col :span="16">
+                        <ApexCharts height="100" :options="coreCaseCoverRateOptions" :series="coreCaseCoverRateSeries"></ApexCharts>
                     </el-col>
                 </el-row>
             </el-card>
-            <el-card style="width: 30%">
+            <el-card style="width: 30%; max-height: 300px;">
                 <div slot="header">
                     <span>Report</span>
                     <i class="iconfont">&#xe66e;</i>
                 </div>
-                <ApexCharts :options="reportPieOptions" :series="reportPieSeries"></ApexCharts>
+                <ApexCharts height="230" :options="reportPieOptions" :series="reportPieSeries"></ApexCharts>
             </el-card>
 
         </div>
 
-        <div style="display: flex; justify-content: space-around;  margin-top: 20px;">
+        <div style="display: flex; justify-content: space-around; margin-top: 10px;">
             <el-card style="width: 30%;">
                 <div slot="header">
                     <span>API每日创建</span>
                     <i class="iconfont">&#xe74a;</i>
                 </div>
 
-                <ApexCharts type="area" :options="apiAreaOptions" :series="apiAreaSeries"></ApexCharts>
+                <ApexCharts height="200" type="area" :options="apiAreaOptions" :series="apiAreaSeries"></ApexCharts>
             </el-card>
             <el-card style="width: 30%">
                 <div slot="header">
                     <span>Case每日创建</span>
                     <i class="iconfont">&#xe6da;</i>
                 </div>
-                <ApexCharts type="area" :options="caseAreaOptions" :series="caseAreaSeries"></ApexCharts>
+                <ApexCharts height="200" type="area" :options="caseAreaOptions" :series="caseAreaSeries"></ApexCharts>
             </el-card>
             <el-card style="width: 30%">
                 <div slot="header">
                     <span>Report每日创建</span>
                     <i class="iconfont">&#xe66e;</i>
-                    <!--                    TODO 日期选择-->
-                    <!--                    <el-button style="float: right; padding: 3px 0" type="text">操作按钮</el-button>-->
                 </div>
-                <ApexCharts type="area" :options="reportAreaOptions" :series="reportAreaSeries"></ApexCharts>
+                <ApexCharts height="200" type="area" :options="reportAreaOptions" :series="reportAreaSeries"></ApexCharts>
             </el-card>
 
         </div>
@@ -158,6 +153,15 @@ export default {
                     id: "apiPie",
                     type: "donut",
                 },
+                legend: {
+                    show: true,
+                    position: 'right',
+                    offsetY: 0,
+                    fontSize: '12px',
+                    formatter: function(val, opts) {
+                        return val;
+                    }
+                },
                 // 饼图右上角的分类，会被接口返回值的覆盖
                 labels: ['手动创建的API', '从YAPI导入API',]
             },
@@ -165,67 +169,87 @@ export default {
             coreCaseCoverRateSeries: [],
             apiCoverRateOptions: {
                 chart: {
-                    height: 20,
+                    height: 150,
                     type: "radialBar"
                 },
+                colors: ["#2196F3"],
                 plotOptions: {
                     radialBar: {
                         hollow: {
-                            margin: 15,
-                            size: "50%"
+                            margin: 0,
+                            size: "60%"
+                        },
+                        track: {
+                            background: "#f2f2f2",
+                            strokeWidth: '100%'
                         },
                         dataLabels: {
                             showOn: "always",
                             name: {
-                                offsetY: 0,
                                 show: true,
                                 color: "#888",
-                                fontSize: "13px"
+                                fontSize: "14px",
+                                offsetY: 30
                             },
                             value: {
                                 color: "#111",
-                                fontSize: "16px",
-                                show: true
-                            }
+                                fontSize: "18px",
+                                show: true,
+                                offsetY: -10,
+                                formatter: function(val) {
+                                    return val + "%";
+                                }
+                            },
+                            position: "outside"
                         }
                     }
                 },
                 stroke: {
                     lineCap: "round",
                 },
-                labels: ["接口覆盖率"]
+                labels: ["接口覆盖"]
             },
             coreCaseCoverRateOptions: {
                 chart: {
-                    height: 20,
+                    height: 150,
                     type: "radialBar"
                 },
+                colors: ["#4CAF50"],
                 plotOptions: {
                     radialBar: {
                         hollow: {
-                            margin: 15,
-                            size: "50%"
+                            margin: 0,
+                            size: "60%"
+                        },
+                        track: {
+                            background: "#f2f2f2",
+                            strokeWidth: '100%'
                         },
                         dataLabels: {
                             showOn: "always",
                             name: {
-                                offsetY: 0,
                                 show: true,
                                 color: "#888",
-                                fontSize: "13px"
+                                fontSize: "14px",
+                                offsetY: 30
                             },
                             value: {
                                 color: "#111",
-                                fontSize: "16px",
-                                show: true
-                            }
+                                fontSize: "18px",
+                                show: true,
+                                offsetY: -10,
+                                formatter: function(val) {
+                                    return val + "%";
+                                }
+                            },
+                            position: "outside"
                         }
                     }
                 },
                 stroke: {
                     lineCap: "round",
                 },
-                labels: ["核心用例覆盖率"]
+                labels: ["核心覆盖"]
             },
             casePieOptions: {
                 plotOptions: {
@@ -247,6 +271,15 @@ export default {
                 chart: {
                     id: "casePie",
                     type: "donut",
+                },
+                legend: {
+                    show: true,
+                    position: 'right',
+                    offsetY: 0,
+                    fontSize: '12px',
+                    formatter: function(val, opts) {
+                        return val;
+                    }
                 },
                 // 饼图右上角的分类，会被接口返回值的覆盖
                 labels: ['冒烟用例', '集成用例', '监控脚本', '核心用例']
@@ -270,6 +303,15 @@ export default {
                 show: true,
                 chart: {
                     type: "donut",
+                },
+                legend: {
+                    show: true,
+                    position: 'right',
+                    offsetY: 0,
+                    fontSize: '12px',
+                    formatter: function(val, opts) {
+                        return val;
+                    }
                 },
                 // 饼图右上角的分类，会被接口返回值的覆盖
                 labels: ['调试', '异步', '定时', '部署',]
