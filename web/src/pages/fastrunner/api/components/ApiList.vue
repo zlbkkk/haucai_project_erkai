@@ -24,23 +24,32 @@
                     </el-button>
                 </div>
                 <div class="recordapi__header--item">
-                    <el-dropdown @command="tagChangeHandle">
-                        <el-button type="primary">
-                            状态
+                    <el-popover
+                        placement="bottom"
+                        width="200"
+                        trigger="click"
+                        popper-class="tag-filter-popover"
+                    >
+                        <div>
+                            <div style="margin-bottom: 12px;">
+                                <el-checkbox v-model="allTagsSelected" @change="handleSelectAllTags">
+                                    全选
+                                </el-checkbox>
+                            </div>
+                            <div v-for="(label, value) in tagOptions" :key="value" style="margin-bottom: 8px;">
+                                <el-checkbox v-model="tagCheckStatus[value]" @change="handleTagChange">
+                                    {{ label }}
+                                </el-checkbox>
+                            </div>
+                            <div style="margin-top: 10px; text-align: right;">
+                                <el-button size="mini" type="text" @click="clearAllTags">清除</el-button>
+                            </div>
+                        </div>
+                        <el-button slot="reference" type="primary">
+                            {{ selectedTagsDisplay || '状态筛选' }}
                             <i class="el-icon-arrow-down el-icon--right"></i>
                         </el-button>
-                        <el-dropdown-menu slot="dropdown">
-                            <el-dropdown-item command="1">成功</el-dropdown-item>
-                            <el-dropdown-item command="0">未知</el-dropdown-item>
-                            <el-dropdown-item command="2">失败</el-dropdown-item>
-                            <!--                            <el-dropdown-item command="3">自动成功</el-dropdown-item>-->
-                            <el-dropdown-item command="">所有</el-dropdown-item>
-                        </el-dropdown-menu>
-                    </el-dropdown>
-                    <span v-if="visibleTag !== '' && visibleTag !== undefined"
-                          style="margin-left: 8px; color: #409EFF; font-size: 12px; background-color: #ecf5ff; padding: 2px 8px; border-radius: 12px; border: 1px solid #b3d8ff;">
-                        {{ getStatusText(visibleTag) }}
-                    </span>
+                    </el-popover>
                 </div>
                 <!--                            api环境字段暂时不使用-->
 
@@ -124,7 +133,7 @@
                                 ref="tree"
                             >
                             <span class="custom-tree-node"
-                                  slot-scope="{ node, _ }"
+                                  slot-scope="{ node }"
                             >
                                 <span><i class="iconfont" v-html="expand"></i>&nbsp;&nbsp;{{ node.label }}</span>
                             </span>
@@ -166,7 +175,7 @@
                                 ref="tree"
                             >
                             <span class="custom-tree-node"
-                                  slot-scope="{ node, _ }"
+                                  slot-scope="{ node }"
                             >
                                 <span><i class="iconfont" v-html="expand"></i>&nbsp;&nbsp;{{ node.label }}</span>
                             </span>
@@ -203,7 +212,7 @@
                         <el-table-column
                             width="25"
                         >
-                            <template slot-scope="_">
+                            <template slot-scope="">
                                 <el-dropdown @command="dropdownMenuChangeHandle">
                                     <span><i class="el-icon-more"></i></span>
                                     <el-dropdown-menu slot="dropdown">
@@ -407,6 +416,21 @@ export default {
                 count: 0,
                 results: []
             },
+            selectedTags: [],
+            tagOptions: {
+                '1': '成功',
+                '0': '未知',
+                '2': '失败',
+                '4': '废弃'
+            },
+            tagCheckStatus: {
+                '0': false,
+                '1': false,
+                '2': false,
+                '4': false
+            },
+            selectedTagsDisplay: '',
+            allTagsSelected: false,
             // tag: this.visibleTag,
             // rigEnv: this.rigEnv,
         }
@@ -482,25 +506,100 @@ export default {
     },
 
     methods: {
+        // 处理全选按钮的变化
+        handleSelectAllTags(val) {
+            Object.keys(this.tagCheckStatus).forEach(key => {
+                this.tagCheckStatus[key] = val;
+            });
+            this.handleTagChange();
+        },
+        
+        // 处理标签勾选变化
+        handleTagChange() {
+            this.selectedTags = Object.keys(this.tagCheckStatus).filter(key => this.tagCheckStatus[key]);
+            this.updateSelectedTagsDisplay();
+            // 更新全选状态
+            this.allTagsSelected = this.selectedTags.length === Object.keys(this.tagOptions).length;
+            this.getAPIListWithTags();
+        },
+        
+        // 清除所有选中的标签
+        clearAllTags() {
+            Object.keys(this.tagCheckStatus).forEach(key => {
+                this.tagCheckStatus[key] = false;
+            });
+            this.selectedTags = [];
+            this.selectedTagsDisplay = '';
+            this.allTagsSelected = false;
+            this.$emit('update:visibleTag', '');
+            this.getAPIList();
+        },
+        
+        // 更新选中标签的显示文本
+        updateSelectedTagsDisplay() {
+            if (this.allTagsSelected) {
+                // 显示所有枚举项而不是"全部状态"
+                const allLabels = Object.values(this.tagOptions);
+                this.selectedTagsDisplay = allLabels.join(' , ');
+                return;
+            }
+            
+            const selectedLabels = this.selectedTags.map(value => this.tagOptions[value]);
+            this.selectedTagsDisplay = selectedLabels.length > 0 ? selectedLabels.join(' , ') : '';
+        },
+        
         getStatusText(tag) {
-            switch (tag) {
-                case '1':
-                case 1:
-                    return '成功';
+            switch(tag) {
                 case '0':
                 case 0:
                     return '未知';
+                case '1':
+                case 1:
+                    return '成功';
                 case '2':
                 case 2:
                     return '失败';
-                case '':
-                    return '所有';
+                case '4':
+                case 4:
+                    return '废弃';
                 default:
-                    return '';
+                    return '所有';
             }
         },
+        
+        handleTagsChange() {
+            // 使用多选的标签值更新API列表
+            this.getAPIListWithTags();
+        },
+        
+        getAPIListWithTags() {
+            // 如果没有选择任何标签，则查询所有
+            if (this.selectedTags.length === 0) {
+                this.$emit('update:visibleTag', '');
+                this.getAPIList();
+                return;
+            }
+            
+            // 构建查询条件
+            const params = {
+                page: this.currentPage,
+                node: this.node,
+                project: this.project,
+                search: this.search,
+                tag: this.selectedTags.join(','), // 将多个标签值拼接成逗号分隔的字符串
+                rigEnv: this.rigEnv,
+                onlyMe: this.onlyMe,
+                showYAPI: this.showYAPI
+            };
+            
+            // 调用API获取数据
+            this.$api.apiList({ params }).then(res => {
+                this.apiData = res;
+            });
+        },
+        
+        // 保留原来的tagChangeHandle方法以兼容其他地方的调用
         tagChangeHandle(command) {
-            // this.tag = command;
             this.$emit('update:visibleTag', command);
             this.getAPIList();
         },
@@ -549,12 +648,16 @@ export default {
             this.search = "";
             this.node = "";
             this.$emit('update:listCurrentPage', 1)
-            // this.tag = "";
-            // this.$emit('update:tag', '');
             this.$emit('update:visibleTag', '');
             this.$emit('update:rigEnv', '');
             this.$emit('update:onlyMe', true);
             this.$emit('update:showYAPI', true);
+            this.selectedTags = [];
+            this.selectedTagsDisplay = '';
+            Object.keys(this.tagCheckStatus).forEach(key => {
+                this.tagCheckStatus[key] = false;
+            });
+            this.allTagsSelected = false;
             this.getAPIList();
         },
         handleOnlyMeChange() {

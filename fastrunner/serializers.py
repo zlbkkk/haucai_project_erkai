@@ -96,7 +96,7 @@ class AssertSerializer(serializers.Serializer):
     project = serializers.IntegerField(required=True, min_value=1)
     search = serializers.CharField(default="")
     creator = serializers.CharField(required=False, default="")
-    tag = serializers.ChoiceField(choices=models.API.TAG, default="")
+    tag = serializers.CharField(default="")  # 改为CharField以支持逗号分隔的多值
     rigEnv = serializers.ChoiceField(choices=models.API.ENV_TYPE, default="")
     delete = serializers.ChoiceField(choices=(0, 1), default=0)
     onlyMe = serializers.BooleanField(default=False)

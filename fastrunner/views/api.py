@@ -84,7 +84,27 @@ class APITemplateView(GenericViewSet):
                 queryset = queryset.filter(relation=node)
 
             if tag != "":
-                queryset = queryset.filter(tag=tag)
+                # 支持多个状态筛选，以逗号分隔
+                if ',' in tag:
+                    tag_list = tag.split(',')
+                    tag_filter = Q()
+                    for t in tag_list:
+                        # 确保每个标签值是有效的
+                        try:
+                            t = int(t.strip())
+                            if t in dict(models.API.TAG).keys():
+                                tag_filter |= Q(tag=t)
+                        except (ValueError, TypeError):
+                            continue
+                    queryset = queryset.filter(tag_filter)
+                else:
+                    # 单个标签值的处理
+                    try:
+                        tag_value = int(tag)
+                        if tag_value in dict(models.API.TAG).keys():
+                            queryset = queryset.filter(tag=tag_value)
+                    except (ValueError, TypeError):
+                        pass
 
             if rig_env != "":
                 queryset = queryset.filter(rig_env=rig_env)
