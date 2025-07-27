@@ -139,7 +139,9 @@
                                 </span>
 
                                 <div class="edit__block--inner">
-                                    <span class="block-method block_url">{{ item.url }}</span>
+                                    <el-tooltip :content="item.url" placement="top" :enterable="false">
+                                        <span class="block_url">{{ item.url }}</span>
+                                    </el-tooltip>
                                     <span class="block-summary-description">{{ item.name }}</span>
                                 </div>
                                 <div>
@@ -164,9 +166,11 @@
                             @dragover="allowDrop($event)"
                         >
                             <div class="test-list">
-                                <span v-if="testData.length === 0" style="color: red"
-                                    >温馨提示：<br />选择左侧相应API节点显示可拖拽的API<br />从左边拖拽API至此区域组成业务用例<br />
-                                    上下拖动此区域接口调整接口调用顺序
+                                <span v-if="testData.length === 0" class="warm-tips">
+                                    <div class="warm-tips-title">温馨提示：</div>
+                                    <div class="warm-tips-item">选择左侧相应API节点显示可拖拽的API</div>
+                                    <div class="warm-tips-item">从左边拖拽API至此区域组成业务用例</div>
+                                    <div class="warm-tips-item">上下拖动此区域接口调整接口调用顺序</div>
                                 </span>
                                 <div v-if="isConfigExist" class="block block_test" @mousemove="currentTest = -1">
                                     <span class="block-method block_method_config block_method_color">{{
@@ -865,9 +869,65 @@ export default {
     overflow: visible;
 }
 
-/* 确保API列表内容不溢出 */
+/* 修改API展示样式 */
 .block {
+    position: relative;
+    padding: 5px;
+    border-radius: 4px;
+    margin-bottom: 8px;
     overflow: hidden;
+}
+
+.edit__block {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    border-radius: 4px;
+    background-color: rgba(236, 248, 238, 0.4);
+    border: 1px solid #ebeef5;
+}
+
+.edit__block--inner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+}
+
+.block_url {
+    color: #3b4151;
+    font-family: monospace;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+    cursor: pointer;
+}
+
+.block_url:hover::after {
+    content: attr(title);
+    position: absolute;
+    left: 0;
+    top: 100%;
+    background: #fff;
+    padding: 4px 8px;
+    border: 1px solid #ebeef5;
+    border-radius: 4px;
+    z-index: 1;
+    white-space: normal;
+    word-break: break-all;
+    box-shadow: 0 2px 12px 0 rgba(0,0,0,.1);
+}
+
+.block-summary-description {
+    color: #666;
+    font-size: 13px;
+    white-space: nowrap;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* 确保两列布局不会挤压 */
@@ -888,5 +948,32 @@ export default {
     position: relative !important;
     left: auto !important;
     margin-top:-118px !important;
+}
+
+/* 温馨提示样式 */
+.warm-tips {
+    color: #666;
+    font-size: 14px;
+    line-height: 1.8;
+}
+
+.warm-tips-title {
+    color: #409EFF;
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.warm-tips-item {
+    position: relative;
+    padding-left: 12px;
+    margin: 4px 0;
+    list-style: none;
+}
+
+.warm-tips-item::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: #409EFF;
 }
 </style>
