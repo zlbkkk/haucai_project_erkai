@@ -16,13 +16,26 @@ from FasterRunner.mycelery import app
 
 class DatabaseLogHandler(logging.Handler):
     def emit(self, record: logging.LogRecord) -> None:
-        from system.models import LogRecord  # 引入上面定义的LogRecord模型
+        try:
+            from system.models import LogRecord  # 引入上面定义的LogRecord模型
 
-        LogRecord.objects.create(
-            request_id=record.request_id,
-            level=record.levelname,
-            message=self.format(record),
-        )
+            # 获取格式化后的消息
+            message = self.format(record)
+            
+            # 确保request_id是字符串类型
+            request_id = getattr(record, 'request_id', 'none')
+            if not isinstance(request_id, str):
+                request_id = str(request_id)
+            
+            # 创建日志记录
+            LogRecord.objects.create(
+                request_id=request_id,
+                level=record.levelname,
+                message=message,
+            )
+        except Exception as e:
+            # 避免日志处理器本身出错导致程序崩溃
+            print(f"Error in DatabaseLogHandler: {e}")
 
 
 class LokiHandler(logging.Handler):

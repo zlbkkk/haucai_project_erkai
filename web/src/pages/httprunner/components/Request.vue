@@ -46,7 +46,6 @@
                     label="类型"
                     width="120">
                     <template slot-scope="scope">
-
                         <el-select v-model="scope.row.type">
                             <el-option
                                 v-for="item in dataTypeOptions"
@@ -74,6 +73,7 @@
                         <el-row v-show="scope.row.type === 5">
                             <el-col :span="7">
                                 <el-upload
+                                    :key="`upload-${scope.$index}-${scope.row.value}`"
                                     :show-file-list="false"
                                     :action="uploadFile(scope.row)"
                                     :limit="1"
@@ -81,6 +81,14 @@
                                     :file-list="fileList"
                                     :on-error="uploadError"
                                     :on-success="uploadSuccess"
+                                    :headers="{
+                                        'Authorization': authToken
+                                    }"
+                                    :data="{
+                                        project: currentProjectId,
+                                        description: scope.row.desc || '',
+                                        api: currentProjectId
+                                    }"
                                 >
                                     <el-button
                                         size="small"
@@ -92,13 +100,18 @@
                             </el-col>
 
                             <el-col :span="12">
-                                <el-badge
-                                    :value="scope.row.size"
-                                    style="margin-top: 8px"
-                                >
-                                    <i class="el-icon-document" v-text="scope.row.value"></i>
-                                </el-badge>
-
+                                <div style="margin-top: 8px; display: flex; align-items: center;">
+                                    <i class="el-icon-document" v-text="scope.row.value" style="flex: 1;"></i>
+                                    <el-button 
+                                        v-if="scope.row.value"
+                                        type="text" 
+                                        icon="el-icon-close" 
+                                        size="mini"
+                                        @click="clearFile(scope.$index)"
+                                        style="margin-left: 5px; color: #f56c6c;"
+                                        title="删除文件">
+                                    </el-button>
+                                </div>
                             </el-col>
                         </el-row>
                     </template>
@@ -113,7 +126,7 @@
                 </el-table-column>
 
                 <el-table-column>
-                    <template slot="header" slot-scope="scope">
+                    <template slot="header">
                         <el-button type="info"
                                    size="small"
                                    icon="el-icon-edit"
@@ -168,6 +181,7 @@
 import VJsoneditor from 'v-jsoneditor'
 
 import bus from '../../../util/bus.js'
+import * as api from '../../../restful/api'
 
 export default {
     components: {
@@ -177,6 +191,12 @@ export default {
         save: Boolean,
         request: {
             require: false
+        },
+        project: {
+            type: [Number, String],
+            default: function() {
+                return this.$route.params.id;
+            }
         }
     },
     data() {
@@ -198,9 +218,23 @@ export default {
                         const extractOjb = {
                             "key": arr[arr.length - 1],
                             "value": jsonPath,
-                            "desc": "",
+                            "desc": "自动插入"
                         }
-                        bus.$emit("extractRequest", extractOjb)
+                        bus.$emit('extract', extractOjb)
+                    }
+                    if (event.type === 'click' && event.ctrlKey) {
+                        // 左键点击 + ctrl 提取请求参数jsonpath插入到validate
+                        let arr = node.path
+                        arr.unshift("request.body")
+                        let jsonPath = arr.join(".")
+                        self.notifyCopyRequest(jsonPath, 'Validate插入')
+                        const validateObj = {
+                            "expect": node.value,
+                            "actual": jsonPath,
+                            "comparator": "equals",
+                            "type": 1
+                        }
+                        bus.$emit('validate', validateObj)
                     }
                 },
                 mode: 'code',
@@ -220,7 +254,7 @@ export default {
             paramsData: [{
                 key: '',
                 value: '',
-                type: '',
+                type: 1,
                 desc: ''
             }],
 
@@ -251,20 +285,30 @@ export default {
                 label: 'params',
                 value: 'params'
             }],
-            dataType: 'json',
+            dataType: 'data',
             timeStamp: "",
             textareaData: "",
+            projectId: this.project || this.$route.params.id,
         }
     },
 
     computed: {
         height() {
             return (window.screen.height - 464).toString() + "px"
+        },
+        authToken() {
+            return this.$store && this.$store.state ? this.$store.state.token : '';
+        },
+        currentProjectId() {
+            return this.projectId || (this.$route && this.$route.params ? this.$route.params.id : null);
         }
     },
 
     mounted() {
         this.editorJsonData = this.parseJson()
+        
+        // 只在没有任何数据时才初始化空行
+        // 让request watch处理数据加载，避免重复初始化
     },
     name: "Request",
 
@@ -285,11 +329,58 @@ export default {
         },
 
         request: function () {
-            if (this.request.length !== 0) {
-                this.formData = this.request.data;
+            if (this.request && Object.keys(this.request).length !== 0) {
+                // 处理表单数据
+                if (this.request.data && Array.isArray(this.request.data) && this.request.data.length > 0) {
+                    this.formData = this.request.data;
+                } else {
+                    this.formData = [{ key: '', value: '', type: 1, desc: '' }];
+                }
+                
+                // 确保表单数据中的类型正确设置
+                if (this.formData && this.formData.length > 0) {
+                    this.formData.forEach(item => {
+                        if (!item.type) {
+                            item.type = 1; // 默认为String类型
+                        }
+                    });
+                    
+                    // 检查是否有文件类型的数据，如果有则切换到表单模式
+                    const hasFileType = this.formData.some(item => item.type === 5 && item.key !== '');
+                    if (hasFileType) {
+                        this.dataType = 'data';
+                    }
+                }
+                
                 this.editorJsonData = this.parseJson();
-                this.paramsData = this.request.params;
+                
+                // 处理params数据
+                if (this.request.params && Array.isArray(this.request.params) && this.request.params.length > 0) {
+                    this.paramsData = this.request.params;
+                } else {
+                    this.paramsData = [{ key: '', value: '', type: 1, desc: '' }];
+                }
+                
+                // 确保params数据中的类型也正确设置
+                if (this.paramsData && this.paramsData.length > 0) {
+                    this.paramsData.forEach(item => {
+                        if (!item.type) {
+                            item.type = 1; // 默认为String类型
+                        }
+                    });
+                }
+            } else {
+                // 如果没有request数据，初始化空行
+                if (!this.formData || this.formData.length === 0) {
+                    this.formData = [{ key: '', value: '', type: 1, desc: '' }];
+                }
+                if (!this.paramsData || this.paramsData.length === 0) {
+                    this.paramsData = [{ key: '', value: '', type: 1, desc: '' }];
+                }
             }
+        },
+        project: function(newVal) {
+            this.projectId = newVal || this.$route.params.id;
         }
     },
     methods: {
@@ -322,35 +413,38 @@ export default {
             ).join("\n")
         },
         uploadSuccess(response, file, fileList) {
-            let size = file.size;
-            if (size >= 1048576) {
-                size = (size / 1048576).toFixed(2).toString() + 'MB';
-            } else if (size >= 1024) {
-                size = (size / 1024).toFixed(2).toString() + 'KB';
-            } else {
-                size = size.toString() + 'Byte'
+            this.$notify({
+                message: "上传成功",
+                type: 'success',
+                duration: 1000
+            });
+            
+            // 删除旧文件（如果存在）
+            const oldFileId = this.formData[this.currentIndex].file_id;
+            if (oldFileId) {
+                api.deleteFile(oldFileId).catch(() => {});
             }
-            this.formData[this.currentIndex]['value'] = file.name;
-            this.formData[this.currentIndex]['size'] = size;
-            this.fileList = [];
-            if (!response.success) {
-                this.$message.error(file.name + response.msg);
-            }
-
+            
+            // 更新文件信息
+            this.formData[this.currentIndex].value = file.name;
+            this.formData[this.currentIndex].size = file.size;
+            this.formData[this.currentIndex].file_id = response.id;
+            
+            // 强制更新组件以确保下次上传正常工作
+            this.$forceUpdate();
+        },
+        
+        uploadError(err, file, fileList) {
+            console.error("上传错误:", err);
+            this.$notify.error({
+                message: "上传失败: " + (err.message || "请检查认证信息和网络连接"),
+                duration: 3000
+            });
         },
 
         uploadFile(row) {
-            return this.$api.uploadFile();
-        },
-
-        uploadError(error) {
-            if (error.status === 401) {
-                this.$router.replace({
-                    name: 'Login'
-                })
-            } else {
-                this.$message.error('Sorry，文件上传失败啦, 请重试！')
-            }
+            // 使用新的文件上传API，添加token参数
+            return '/api/fastrunner/file/?token=' + this.authToken;
         },
 
         cellMouseEnter(row) {
@@ -382,6 +476,12 @@ export default {
         handleDelete(index, row) {
             const data = this.dataType === 'data' ? this.formData : this.paramsData;
             data.splice(index, 1);
+        },
+
+        clearFile(index) {
+            this.formData[index].value = '';
+            this.formData[index].size = 0;
+            this.formData[index].file_id = null;
         },
 
         // 文件格式化
@@ -460,6 +560,11 @@ export default {
 
         // 类型转换
         parseType(type, value) {
+            // 如果是File类型（type=5），直接返回原值，不进行任何处理
+            if (type === 5) {
+                return value;
+            }
+            
             let tempValue;
             const msg = value + ' => ' + this.dataTypeOptions[type - 1].label + ' 转换异常, 该数据自动剔除';
             switch (type) {
@@ -488,7 +593,6 @@ export default {
                         return 'exception'
                     }
                     break;
-                case 5:
                 case 6:
                     try {
                         tempValue = JSON.parse(value);

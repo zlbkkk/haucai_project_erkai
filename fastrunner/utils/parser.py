@@ -188,6 +188,17 @@ class Parse(object):
 
     @staticmethod
     def __get_type(content):
+        # 如果content是字典且包含type字段，说明这是前端formData格式
+        # 直接根据type字段返回相应的类型和值
+        if isinstance(content, dict) and 'type' in content and 'value' in content:
+            type_value = content['type']
+            value = content['value']
+            # 如果是文件类型，直接返回字符串类型和文件名
+            if type_value == 5:
+                return 1, str(value)  # 文件类型作为字符串处理
+            else:
+                return type_value, value
+        
         var_type = {
             "str": 1,
             "int": 2,
@@ -210,6 +221,11 @@ class Parse(object):
             content = json.dumps(content, ensure_ascii=False)
         else:
             content = str(content)
+        
+        # 如果类型不在预定义字典中，默认为字符串类型
+        if key not in var_type:
+            return var_type["str"], content
+            
         return var_type[key], content
 
     def parse_http(self):
@@ -300,16 +316,34 @@ class Parse(object):
                 for key, value in self.__request.pop("headers").items()
             ]
 
+        # 处理data字段 - 支持两种格式：字典格式和数组格式（前端formData）
         if self.__request.get("data"):
-            test["request"]["data"] = [
-                {
-                    "key": key,
-                    "value": Parse.__get_type(value)[1],
-                    "type": Parse.__get_type(value)[0],
-                    "desc": self.__desc.get("data", {}).get(key, "") if self.__desc else "",
-                }
-                for key, value in self.__request.pop("data").items()
-            ]
+            data_content = self.__request.pop("data")
+            
+            # 如果是数组格式（前端formData格式）
+            if isinstance(data_content, list):
+                test["request"]["data"] = []
+                for item in data_content:
+                    if isinstance(item, dict) and item.get("key") and item.get("key") != "":
+                        # 过滤掉文件类型的数据，文件数据应该在files字段中处理
+                        if item.get("type") != 5:
+                            test["request"]["data"].append({
+                                "key": item["key"],
+                                "value": item["value"],
+                                "type": item.get("type", 1),
+                                "desc": item.get("desc", "")
+                            })
+            # 如果是字典格式（标准格式）
+            elif isinstance(data_content, dict):
+                test["request"]["data"] = [
+                    {
+                        "key": key,
+                        "value": Parse.__get_type(value)[1],
+                        "type": Parse.__get_type(value)[0],
+                        "desc": self.__desc.get("data", {}).get(key, "") if self.__desc else "",
+                    }
+                    for key, value in data_content.items()
+                ]
 
         if self.__request.get("params"):
             test["request"]["params"] = [
@@ -329,6 +363,21 @@ class Parse(object):
                 separators=(",", ": "),
                 ensure_ascii=False,
             )
+
+        # 处理文件上传
+        if self.__request.get("files"):
+            files_data = self.__request.pop("files")
+            for key, value in files_data.items():
+                # 将文件信息添加到formData中
+                file_item = {
+                    "key": key,
+                    "value": str(value),  # 文件名直接转为字符串，不使用类型解析
+                    "type": 5,  # File类型
+                    "desc": self.__desc.get("files", {}).get(key, "") if self.__desc else "",
+                }
+                # 检查是否已经有data字段，如果没有则初始化
+                if not any(item["key"] == key and item["type"] == 5 for item in test["request"]["data"]):
+                    test["request"]["data"].append(file_item)
 
     def parse_variables(self, test):
         if self.__variables:

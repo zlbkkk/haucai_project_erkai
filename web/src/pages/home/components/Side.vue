@@ -73,8 +73,29 @@ export default {
     top: 48px;
     border-right: 1px solid #ddd;
     height: 100%;
-    width: 202px;
+    width: 200px;
     background-color: #fff;
     display: inline-block;
+    overflow: visible;
+    z-index: 1000;
+}
+
+/* 添加子菜单样式确保不会超出 */
+.el-menu--popup {
+    max-width: 180px !important;
+    min-width: 180px !important;
+    background-color: #304056 !important;
+}
+
+/* 防止子菜单展开时出现阴影 */
+.el-submenu__title + .el-menu {
+    overflow: hidden !important;
+    width: 180px !important;
+}
+
+/* 修复子菜单展开时的样式 */
+.el-submenu .el-menu-item {
+    min-width: auto !important;
+    width: 180px !important;
 }
 </style>

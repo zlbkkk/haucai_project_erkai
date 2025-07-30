@@ -27,7 +27,10 @@ class VisitTimesMiddleware(MiddlewareMixin):
         if body == b"":
             body = ""
         else:
-            body = str(body, encoding="utf-8")
+            try:
+                body = str(body, encoding="utf-8")
+            except UnicodeDecodeError:
+                body = "<binary data>"
 
         if request.user is None:
             # 报告页面不需要登录，获取不到用户名

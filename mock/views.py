@@ -13,7 +13,8 @@ from django_filters import rest_framework as filters
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, viewsets
-from rest_framework.filters import SearchFilter
+# 替换原来的SearchFilter导入
+from .custom_filters import CustomSearchFilter
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -336,7 +337,7 @@ class MockAPILogViewSet(viewsets.ModelViewSet):
                 )
                 .all())
     serializer_class = MockAPILogSerializer
-    filter_backends = [DjangoFilterBackend, SearchFilter]
+    filter_backends = [DjangoFilterBackend, CustomSearchFilter]
     filterset_class = MockAPILogFilter
     search_fields = ['request_id', 'api__request_path']
     pagination_class = MockAPILogPagination

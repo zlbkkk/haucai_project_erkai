@@ -111,6 +111,7 @@
                         :save="save"
                         v-on:request="handleRequest"
                         :request="response ? response.body.request: []"
+                        :project="project"
                     >
                     </request>
                 </el-tab-pane>

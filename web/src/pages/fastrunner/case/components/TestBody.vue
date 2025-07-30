@@ -3,7 +3,7 @@
         <div>
             <div>
                 <el-input
-                    style="width: 600px"
+                    style="width: 350px"
                     placeholder="请输入接口名称"
                     v-model="name"
                     clearable
@@ -359,7 +359,7 @@ export default {
 }
 
 .input-with-select {
-    width: 600px;
+    width: 350px;
     margin-top: 10px;
 }
 

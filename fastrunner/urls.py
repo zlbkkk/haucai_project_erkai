@@ -57,8 +57,9 @@ urlpatterns = [
     path("tree/<int:pk>/", project.TreeView.as_view()),
     # 导入yapi
     path("yapi/<int:pk>/", yapi.YAPIView.as_view()),
-    # 文件上传 修改 删除接口地址
-    # path('file/', project.FileView.as_view()),
+    # 文件上传相关接口
+    path("file/", api.APIFileView.as_view({"post": "upload", "get": "list"})),
+    path("file/<int:pk>/", api.APIFileView.as_view({"delete": "delete"})),
     # api接口模板地址
     path("api/", api.APITemplateView.as_view({"post": "add", "get": "list"})),
     path(

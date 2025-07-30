@@ -485,3 +485,12 @@ class ScheduleDeSerializer(serializers.Serializer):
 
             if validation_errors:
                 raise serializers.ValidationError(f"{','.join(validation_errors)} 已经在其他项目存在")
+
+
+class APIFileSerializer(serializers.ModelSerializer):
+    """
+    API文件序列化
+    """
+    class Meta:
+        model = models.APIFile
+        fields = '__all__'

@@ -85,8 +85,17 @@ class MyJWTAuthentication(JSONWebTokenAuthentication):
         Returns a two-tuple of `User` and token if a valid signature has been
         supplied using JWT-based authentication.  Otherwise returns `None`.
         """
-        # jwt_value = request.query_params.get("token", None)
+        # 先从请求头中获取token
         jwt_value = request.headers.get("authorization", None)
+        
+        # 如果请求头中没有token，尝试从URL参数中获取
+        if not jwt_value:
+            jwt_value = request.query_params.get("token", None)
+            
+        # 如果没有找到token，返回None
+        if not jwt_value:
+            return None
+            
         try:
             payload = jwt_decode_handler(jwt_value)
         except jwt.ExpiredSignatureError:

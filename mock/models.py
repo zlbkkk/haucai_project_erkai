@@ -4,6 +4,7 @@ import time
 import uuid
 
 from django.db import models
+import jsonfield
 
 from fastuser.models import BaseTable
 

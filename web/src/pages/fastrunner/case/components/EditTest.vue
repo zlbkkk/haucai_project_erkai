@@ -23,7 +23,7 @@
                         ref="tree2"
                     >
                         <span class="custom-tree-node" slot-scope="{ node, data }">
-                            <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 140px; display: inline-block;">
+                            <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 120px; display: inline-block;">
                                 <i class="iconfont" v-html="expand"></i>
                                 &nbsp;&nbsp;{{ node.label }}
                             </span>
@@ -39,7 +39,7 @@
                     <div class="recordapi__header--item">
                         <el-input
                             placeholder="请输入接口名称"
-                            style="width: 350px; text-align: center"
+                            style="width: 200px; text-align: center"
                             clearable
                             @input="inputVal"
                             :value="search"
@@ -80,7 +80,7 @@
                 <div class="recordapi__header" :style="{ flex: 1 }">
                     <div class="recordapi__header--item">
                         <el-input
-                            style="width: 500px; text-align: center"
+                            style="width: 250px; text-align: center"
                             placeholder="请输入测试用例名称"
                             v-model="testName"
                             clearable

@@ -142,8 +142,20 @@ export const updateTree = (url, params) => {
     return axios.patch('/api/fastrunner/tree/' + url + '/', params).then(res => res.data)
 };
 
-export const uploadFile = url => {
-    return '/api/fastrunner/file/?token=' + store.token
+export const uploadFile = (params) => {
+    return axios.post('/api/fastrunner/file/', params, {
+        headers: {
+            'Content-Type': 'multipart/form-data'
+        }
+    }).then(res => res.data)
+};
+
+export const getFileList = (params) => {
+    return axios.get('/api/fastrunner/file/', {params}).then(res => res.data)
+};
+
+export const deleteFile = (fileId) => {
+    return axios.delete(`/api/fastrunner/file/${fileId}/`).then(res => res.data)
 };
 
 export const addAPI = params => {

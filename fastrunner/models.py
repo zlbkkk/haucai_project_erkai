@@ -93,6 +93,24 @@ class API(BaseTable):
     # resp_sample = models.TextField("接口响应样例", default='{}', null=False)
 
 
+class APIFile(BaseTable):
+    """
+    API文件表，存储上传的文件信息
+    """
+
+    class Meta:
+        verbose_name = "API文件"
+        db_table = "api_file"
+
+    name = models.CharField("文件名称", null=False, max_length=255)
+    file_path = models.CharField("文件路径", null=False, max_length=500)
+    file_size = models.IntegerField("文件大小(字节)", null=False)
+    file_type = models.CharField("文件类型", max_length=50, null=True)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, db_constraint=False)
+    api = models.ForeignKey(API, on_delete=models.SET_NULL, null=True, db_constraint=False, related_name="files")
+    description = models.CharField("文件描述", max_length=255, null=True, blank=True)
+
+
 class Case(BaseTable):
     """
     用例信息表

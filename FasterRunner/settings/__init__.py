@@ -19,4 +19,13 @@ django.utils.translation.ugettext = gettext_lazy
 django.utils.translation.ugettext_lazy = gettext_lazy
 
 # 默认使用开发环境配置
-from .dev import *
+try:
+    from .dev import *
+except ImportError:
+    from .pro import *
+
+# 导入自定义数据库设置
+try:
+    from .custom_db import *
+except ImportError:
+    pass
